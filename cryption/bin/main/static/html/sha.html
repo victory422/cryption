@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="/css/forms.css" rel="stylesheet" type="text/css" />
+<link href="/css/custom.css" rel="stylesheet" type="text/css" />
+<link href="/css/reboot.css" rel="stylesheet" type="text/css" />
+<link href="/css/grid.css" rel="stylesheet" type="text/css" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="/js/common.js"></script>
+<script type="text/javascript">
+
+	let oneWayEncrypt = function() {
+		let pwd = document.getElementById("pwd").value.trim();
+		if( pwd == null || pwd == '' || typeof pwd == "undefined" ) {
+			alert("password를 입력해주세요.");
+			return;
+		}
+		
+		let bfCd = "";
+		document.getElementById("chk").checked ? bfCd = "salt" : bfCd = "";
+		
+		//param
+		let data = {
+			pwd : pwd,
+			bfCd : bfCd
+		};
+		
+		loadData("POST", "/sha/oneWayEncrypt", JSON.stringify(data), function(map) {
+			console.log(map);
+			document.getElementById("rstArea").innerHTML = "";
+			document.getElementById("rstArea").value = "";
+			document.getElementById("rstArea").value = map.resultVal;
+		});
+	}
+	
+	
+	
+	
+	
+</script>
+<style type="text/css">
+
+</style>
+<meta charset="UTF-8">
+<title>SHA-256</title>
+</head>
+<body>
+	<div data-include-path="../header.html"></div>
+	<div class="row" style="height: auto !important;">
+		<div class="col-md-6 col-sm-6 col-xs-12" style="padding-right: 15px;padding-left: 15px;">
+			<h2>SHA 암호화 생성</h2>
+			<div class="form-group ng-hide" ng-show="showDecryptIV" style="display:block">
+				<label for="decryptivinput">Enter password</label> 
+				<input class="form-control input-lg ng-pristine ng-untouched ng-valid" id="pwd" placeholder="Enter plainText">
+				<label for="chk">salt </label><input type="checkbox" class="" id="chk" placeholder="">
+			</div>
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash" onclick="oneWayEncrypt()">암호화</button>
+			</div>
+			<div class="form-group ng-hide" ng-show="showDecryptIV" style="display:block;margin-top: 50px">
+				<label for="inputString">Encrypted password</label>
+					<textarea id="rstArea" readonly="readonly"
+						class="form-control input-lg ng-pristine ng-valid ng-touched"
+						rows="5" placeholder=""
+						ng-model="textToEncrypt" name="textToEncrypt"
+						style="height: 186px;"></textarea>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>

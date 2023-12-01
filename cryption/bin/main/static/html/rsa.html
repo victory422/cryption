@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="/css/forms.css" rel="stylesheet" type="text/css" />
+<link href="/css/custom.css" rel="stylesheet" type="text/css" />
+<link href="/css/reboot.css" rel="stylesheet" type="text/css" />
+<link href="/css/grid.css" rel="stylesheet" type="text/css" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="/js/common.js"></script>
+<script type="text/javascript">
+
+let keyList = [];
+
+	let rsaEncrypt = function() {
+		
+		let data = setEncData();
+		
+		loadData("POST", "/rsa/encrypt", JSON.stringify(data), function(a) {
+			console.log(a.result);
+			document.getElementById("outputString").value = a.result;
+		});
+	}
+
+	let rsaDecrypt = function() {
+		//param
+		let data = setDecData();
+		
+		loadData("POST", "/rsa/decrypt", JSON.stringify(data), function(a) {
+			console.log(a.result);
+			document.getElementById("doutputString").value = a.result;
+		},
+		function(error) {
+			alert("복호화 실패. 키 또는 키 이름을 확인해주세요.");
+			document.getElementById("doutputString").value = "";
+		}
+		
+		);
+	}
+	
+	
+	window.addEventListener('DOMContentLoaded', function()
+	{
+			
+		
+	});
+	
+	let setEncData = function() {
+		//param
+		let stb = document.getElementById("sel_key");
+		let keyName = stb.options[stb.selectedIndex].innerHTML;
+		
+		let data = {
+				plainText : document.getElementById("inputString").value,
+				//text : document.getElementById("sel_key").value,
+				keyName : keyName,
+				keySize : document.getElementById("keysize").value
+		};
+		
+		console.log(data);
+		
+		return data;
+	}
+	
+	let setDecData = function() {
+		//param
+		let stb = document.getElementById("sel_decKey");
+		let keyName = stb.options[stb.selectedIndex].innerHTML;
+		
+		let data = {
+				encodeText : document.getElementById("dinputString").value,
+				keyName : keyName,
+				keySize : 0
+		};
+		
+		console.log(data);
+		
+		return data;
+	}
+	
+	let keySave = function() {
+		
+		let data = {
+				keyName : document.getElementById("keyName").value,
+				keySize : document.getElementById("keysize").value
+		};
+				
+		//param	
+		loadData("POST", "/rsa/publicKey", JSON.stringify(data), function(rst) {
+			console.log(rst);
+			keyList.push(rst);
+			switch ( rst.result ) {
+				case "S" : alert('저장되었습니다.'); break;
+				case "E" : alert('오류가 발생하였습니다. 다시 시도해주세요.'); break;
+				case "D" : alert('key name이 중복됩니다.'); break;
+				case "K" : alert('key값 중복, 재시도해주세요.'); break;
+			}
+		});
+	}
+	
+	let keySearch = function() {
+		let searchStr = document.getElementById("ipt_keySearch").value;
+		if ( typeof searchStr == "undefined" ) searchStr = "";
+		loadData("GET", "/rsa/keySearch?searchStr=" + searchStr + "&bf=public" , {}, function(rst) {
+			console.log(rst);
+			keyList = rst;	// 전역변수
+			keysSet(rst, document.getElementById("sel_keySearch"));
+			keysSet(rst, document.getElementById("sel_key"));
+			keysSet(rst, document.getElementById("sel_decKey"));
+			keysSet(rst, document.getElementById("sel_signKey"));
+			keysSet(rst, document.getElementById("sel_vSignKey"));
+			
+		});
+	}
+	
+	
+	let keyDelete = function() {
+		let stb = document.getElementById("sel_keySearch");
+		let delKey = stb.options[stb.selectedIndex].innerHTML;
+		
+		if( stb.options[stb.selectedIndex].getAttribute("value") == null ) return false;
+		loadData("DELETE", "/rsa/keyDelete/" + delKey, {}, function(rst) {
+			console.log(rst);
+			switch ( rst.result ) {
+				case "S" : alert('삭제되었습니다.'); 
+					let stb = document.getElementById("sel_keySearch");
+					stb.options.remove(stb.selectedIndex);
+				break;
+				case "E" : alert('오류가 발생하였습니다. 다시 시도해주세요.'); break;
+			}
+		});
+	}
+	
+	let keyUpdate = function() {
+		let stb = document.getElementById("sel_keySearch");
+		if( stb.options[stb.selectedIndex].getAttribute("value") == null ) return false;
+		
+		let data = {
+				updateKey : stb.options[stb.selectedIndex].innerHTML,
+				keySize : document.getElementById("updateKeysize").value
+		}
+		
+		loadData("PUT", "/rsa/keyUpdate", JSON.stringify(data), function(rst) {
+			console.log(rst);
+			switch ( rst.result ) {
+				case "S" : alert('갱신되었습니다.'); 
+					break;
+				case "E" : alert('오류가 발생하였습니다. 다시 시도해주세요.'); break;
+			}
+		});
+	}
+	
+	let digitalSign = function() {
+		let stb = document.getElementById("sel_signKey");
+		if( stb.options[stb.selectedIndex].getAttribute("value") == null ) return false;
+		
+		let data = {
+				plainText : document.getElementById("signString").value,
+				keyName : stb.options[stb.selectedIndex].innerHTML,
+				keySize : document.getElementById("updateKeysize").value
+		}
+		
+		loadData("POST", "/rsa/digitalSign", JSON.stringify(data), function(rst) {
+			console.log(rst);
+			document.getElementById("signOutputString").innerHTML = "";
+			switch ( rst.result ) {
+				case "S" : alert('전자서명 완료');
+					document.getElementById("signOutputString").innerHTML = rst.sign; 
+					break;
+				case "E" : alert('오류가 발생하였습니다. 다시 시도해주세요.'); break;
+			}
+		});
+	}
+	
+	let signVerification = function() {
+		let stb = document.getElementById("sel_vSignKey");
+		if( stb.options[stb.selectedIndex].getAttribute("value") == null ) return false;
+		
+		let data = {
+				plainText : document.getElementById("vsPlainText").value,
+				signText : document.getElementById("vSignString").value,
+				keyName : stb.options[stb.selectedIndex].innerHTML,
+				keySize : document.getElementById("updateKeysize").value
+		}
+		
+		loadData("POST", "/rsa/signVerification", JSON.stringify(data), function(rst) {
+			console.log(rst);
+			document.getElementById("verificationResult").innerHTML = "";
+			switch ( rst.result ) {
+				case "T" : document.getElementById("verificationResult").innerHTML = "전자서명 인증"; 
+					break;
+				case "F" : document.getElementById("verificationResult").innerHTML = "전자서명 인증 실패"; 
+					break;
+				case "E" : alert('오류가 발생하였습니다. 다시 시도해주세요.'); break;
+			}
+		});
+	}
+	
+	
+	let keysSet = function(dataArr, stb) {
+		if( stb != null ) {
+			while (stb != null && stb.options.length > 0 ) {
+				stb.options.remove(0);
+			}
+		}
+		
+		if( dataArr.length == 0 || typeof dataArr == "undefined" ) {
+			var op = document.createElement("option");
+			op.innerHTML = '조회된 결과가 없습니다.';
+			stb.options.add(op);
+			return false;
+		}
+		
+		for( var i = 0 ; i < dataArr.length; i++) {
+			var op = document.createElement("option");
+			op.setAttribute("value", dataArr[i].key);
+			op.innerHTML = dataArr[i].keyName;
+			stb.options.add(op);
+		}
+	}
+	
+	let getRandom = function(lenth) {
+	    var text = "";
+	    var possible = "abcdefghijklmnopqrstuvwxyz0123456789";
+	    for( var i=0; i < lenth; i++ )
+	        text += possible.charAt(Math.floor(Math.random() * possible.length));
+	    return text;
+	}
+
+	
+	
+	
+</script>
+<style type="text/css">
+</style>
+<meta charset="UTF-8">
+<title>RSA</title>
+</head>
+<body>
+	<div data-include-path="../header.html"></div>
+	<div class="row" style="height: auto !important;">
+		<div class="col-md-6 col-sm-6 col-xs-12" style="padding-right: 15px;padding-left: 15px;">
+			<h2>RSA 키 생성</h2>
+			<div class="form-group ng-hide" ng-show="showDecryptIV" style="display:block">
+				<label for="decryptivinput">Enter Key Name</label> 
+				<input class="form-control input-lg ng-pristine ng-untouched ng-valid" id="keyName" placeholder="Enter Key Name">
+			</div>
+			<div class="form-group">
+				<label for="keysize">Key Size in Bits</label> 
+				<select class="form-control input-lg ng-pristine ng-valid ng-touched" ng-model="keysize" id="keysize">
+					<option value="512" >512 bit</option>
+					<option value="1024">1024 bit</option>
+					<option value="2048" selected="selected">2048 bit</option>
+					<option value="4096">4096 bit</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash" onclick="javascript:keySave()">저장</button>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-xs-12 vertical-line" style="padding-right: 15px;padding-left: 15px;">
+			<h2>RSA Key Search</h2>
+			<div class="form-group ng-hide" ng-show="showDecryptIV" style="display:block">
+				<label for="decryptivinput">Enter Key Name</label> 
+				<input class="form-control input-lg ng-pristine ng-untouched ng-valid" id="ipt_keySearch" placeholder="Enter Key Name">
+			</div>
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash" onclick="keySearch()">조회</button>
+			</div>
+			<h2>RSA Key Search Result</h2>
+			
+			<div class="form-group" style="margin-top:0px">
+				<select class="form-control input-lg ng-pristine ng-untouched ng-valid" ng-model="mode" id="sel_keySearch" onchange="">
+				</select>
+			</div>
+			<select class="form-control input-lg ng-pristine ng-valid ng-touched" ng-model="mode" id="updateKeysize">
+					<option value="512">512 bit</option>
+					<option value="1024">1024 bit</option>
+					<option value="2048" selected="selected">2048 bit</option>
+					<option value="4096">4096 bit</option>
+				</select>
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash" onclick="keyUpdate()">갱신</button>
+				<button class="btn btn-primary" name="hash" value="hash" onclick="keyDelete()">삭제</button>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-xs-12 vertical-line" style="padding-right: 15px;padding-left: 15px;">
+			<form role="form" class="ng-pristine ng-valid">
+				<h2>RSA Encryption</h2>
+				<div class="form-group">
+					<label for="inputString">Enter text to be Encrypted</label>
+					<textarea id="inputString"
+						class="form-control input-lg ng-pristine ng-valid ng-touched"
+						rows="5" placeholder="Enter plain text to be Encrypted"
+						ng-model="textToEncrypt" name="textToEncrypt"
+						style="height: 186px;"></textarea>
+				</div>
+				 <label for="mode">Select Key name</label>
+				 <div class="form-group" style="margin-top:0px">
+					<select class="form-control input-lg ng-pristine ng-untouched ng-valid" ng-model="mode" id="sel_key" onchange="">
+					</select>
+				</div>
+				<!--
+				<div class="form-group">
+					<label for="mode">Select Key Size </label> 
+					<select class="form-control input-lg ng-pristine ng-untouched ng-valid" 
+						ng-model="mode" id="mode" ng-change="">
+						<option value="512" >512 bit</option>
+						<option value="1024">1024 bit</option>
+						<option value="2048" selected="selected">2048 bit</option>
+						<option value="4096">4096 bit</option>
+					</select>
+				</div>
+				-->
+			</form>
+			
+				
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash"
+					onclick="rsaEncrypt()">Encrypt</button><!-- setEncData() -->
+			</div>
+
+			<div class="form-group">
+				<label for="outputString">RSA Encrypted Output:</label>
+				<textarea id="outputString"
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					rows="5" placeholder="Result goes here" ng-model="encryptedOutput"></textarea>
+			</div>
+
+
+		</div>
+		<div class="col-md-6 col-sm-6 col-xs-12 vertical-line"
+			style="height: auto !important;padding-right: 15px;padding-left: 15px;">
+
+			<form role="form" class="ng-pristine ng-valid">
+				<h2>RSA Decryption</h2>
+				<div class="form-group">
+					<label for="dinputString">Enter text to be Decrypted</label>
+					<textarea id="dinputString"
+						class="form-control input-lg ng-pristine ng-untouched ng-valid"
+						rows="5" ng-model="textToDecrypt"
+						placeholder="Enter text to be Decrypted" name="textToDecrypt"></textarea>
+				</div>
+
+			</form>
+			<div class="form-group ng-hide" ng-show="showDecryptIV" style="display:none">
+				<label for="decryptivinput">Enter IV Used During
+					Encryption(Optional)</label> <input
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					id="decryptivinput" ng-model="decryptiv"
+					placeholder="Enter initialization vector" name="decryptiv">
+			</div>
+			<div class="form-group" style="display:none">
+				<label for="secretkey">Enter Secret Key used for Encryption</label>
+				<input
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					id="dsecretkey" ng-model="dsecretkey"
+					placeholder="Enter secret key" name="secretkey">
+			</div>
+			
+			<label for="mode">Select Key name</label>
+			 <div class="form-group" style="margin-top:0px">
+				<select class="form-control input-lg ng-pristine ng-untouched ng-valid" ng-model="mode" id="sel_decKey" onchange="">
+				</select>
+			</div>
+			
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash"
+					onclick="rsaDecrypt()">Decrypt</button>
+			</div>
+
+			<div class="form-group">
+				<label for="doutputString">RSA Decrypted Output <strong>(Base64)</strong>:
+				</label>
+				<textarea id="doutputString"
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					placeholder="Base64 encoded result goes here"
+					ng-model="decryptedString" rows="5"></textarea>
+			</div>
+			<!-- 
+			<div class="form-group">
+				<button class="btn btn-primary" name="base64"
+					value="Decode to Plain Text" ng-click="base64Decrypt()">Decode
+					to Plain Text</button>
+			</div>
+			 -->
+			<!-- 
+			<div class="form-group">
+				<input
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					id="base64decoded" ng-model="base64decoded"
+					placeholder="Plain text will appear here" name="base64decoded">
+			</div>
+			 -->
+		</div>
+		<div class="col-md-6 col-sm-6 col-xs-12 vertical-line"
+			style="height: auto !important;padding-right: 15px;padding-left: 15px;">
+
+			<form role="form" class="ng-pristine ng-valid">
+				<h2>RSA Digital sign</h2>
+				<div class="form-group">
+					<label for="signString">Enter text to be sign</label>
+					<textarea id="signString"
+						class="form-control input-lg ng-pristine ng-untouched ng-valid"
+						rows="5" ng-model="textToDecrypt"
+						placeholder="Enter text to be Decrypted" name="textToDecrypt"></textarea>
+				</div>
+
+			</form>
+			
+			<label for="mode">Select Key name</label>
+			 <div class="form-group" style="margin-top:0px">
+				<select class="form-control input-lg ng-pristine ng-untouched ng-valid" ng-model="mode" id="sel_signKey" onchange="">
+				</select>
+			</div>
+			
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash"
+					onclick="digitalSign()">Digital Sign</button>
+			</div>
+
+			<div class="form-group">
+				<label for="signOutputString">RSA Sign Output <strong>(Base64)</strong>:
+				</label>
+				<textarea id="signOutputString"
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					placeholder="Base64 encoded result goes here"
+					ng-model="decryptedString" rows="5"></textarea>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-xs-12 vertical-line"
+			style="height: auto !important;padding-right: 15px;padding-left: 15px;">
+
+			<form role="form" class="ng-pristine ng-valid">
+				<h2>Sign verification</h2>
+				<div class="form-group">
+					<label for="vsPlainText">Enter plain text</label>
+					<textarea id="vsPlainText"
+						class="form-control input-lg ng-pristine ng-untouched ng-valid"
+						rows="5" ng-model="textToDecrypt"
+						placeholder="Enter text to be Decrypted" name="textToDecrypt"></textarea>
+				</div>
+				<div class="form-group">
+					<label for="vSignString">Enter sign</label>
+					<textarea id="vSignString"
+						class="form-control input-lg ng-pristine ng-untouched ng-valid"
+						rows="5" ng-model="textToDecrypt"
+						placeholder="Enter text to be Decrypted" name="textToDecrypt"></textarea>
+				</div>
+
+			</form>
+			
+			<label for="mode">Select Key name</label>
+			 <div class="form-group" style="margin-top:0px">
+				<select class="form-control input-lg ng-pristine ng-untouched ng-valid" ng-model="mode" id="sel_vSignKey" onchange="">
+				</select>
+			</div>
+			
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash"
+					onclick="signVerification()">Sign verification</button>
+			</div>
+
+			<div class="form-group">
+				<label for="verificationResult">verificationResult
+				</label>
+				<textarea id="verificationResult"
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					placeholder="Base64 encoded result goes here"
+					ng-model="decryptedString" rows="5"></textarea>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>

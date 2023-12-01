@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<html>
+<head>
+<link href="/css/forms.css" rel="stylesheet" type="text/css" />
+<link href="/css/custom.css" rel="stylesheet" type="text/css" />
+<link href="/css/reboot.css" rel="stylesheet" type="text/css" />
+<link href="/css/grid.css" rel="stylesheet" type="text/css" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="/js/common.js"></script>
+<script type="text/javascript">
+
+let keyList = [];
+
+
+let symmetricEncrypt = function() {
+		//param	
+		let data = setEncData();
+		data.plainText = data.text;
+		
+		if( document.getElementById("mode").selectedIndex != 0 && data.paramIv.length != 16 && data.paramIv.length != 0 ) {
+			alert('초기화 벡터(iv)값은 16자리이어야 합니다');
+			return false;
+		}
+		
+		loadData("POST", "/aes/encrypt", JSON.stringify(data), function(a) {
+			console.log(a.result);
+			document.getElementById("outputString").value = a.result;
+		});
+	}
+	
+	let symmetricDecrypt = function() {
+		//param
+		let data = setDecData();
+		
+		loadData("POST", "/aes/decrypt", JSON.stringify(data), function(a) {
+			console.log(a.result);
+			document.getElementById("doutputString").value = a.result;
+		});
+	}
+	
+	
+	window.addEventListener('DOMContentLoaded', function()
+	{
+		document.getElementsByName("encryptRadio")[0].click();
+		document.getElementsByName("decryptRadio")[0].click();
+		document.getElementById("mode").addEventListener('change', function(){
+			var idxE = document.getElementById("mode").selectedIndex;
+			if( idxE == 0 ) {
+				document.querySelector("div[ng-show=showEncryptIV]").setAttribute("style","display:none");
+			} else {
+				document.querySelector("div[ng-show=showEncryptIV]").setAttribute("style","display:block");
+			}
+			
+			
+		});
+		
+		document.getElementById("dmode").addEventListener('change', function(){
+			var idxD = document.getElementById("dmode").selectedIndex;
+			console.log(idxD);
+			if( idxD == 0 ) {
+				document.querySelector("div[ng-show=showDecryptIV]").setAttribute("style","display:none");
+			} else {
+				document.querySelector("div[ng-show=showDecryptIV]").setAttribute("style","display:block");
+			}
+		});
+		
+	});
+	
+	let setEncData = function() {
+		//param
+		let cipCd = "";
+		let radioChk = document.getElementsByName("encryptRadio")[0].checked;
+		let key = document.getElementById("sel_key").value;
+		
+		document.getElementById("mode").selectedIndex == 0 ? cipCd = 'E': cipCd = 'C';
+		radioChk ? radioChk = "B" : radioChk = "H";
+		
+		let data = {
+				key : key,
+				text : document.getElementById("inputString").value,
+				//text : document.getElementById("sel_key").value,
+				cipherCd : cipCd,
+				encCd : radioChk,
+				paramIv : document.getElementById("encryptivinput").value
+		};
+		
+		console.log(data);
+		
+		return data;
+	}
+	
+	let setDecData = function() {
+		//param
+		let cipCd = "";
+		let radioChk = document.getElementsByName("decryptRadio")[0].checked;
+		let key = document.getElementById("sel_dkey").value;
+		
+		document.getElementById("dmode").selectedIndex == 0 ? cipCd = 'E': cipCd = 'C';
+		radioChk ? radioChk = "B" : radioChk = "H";
+		
+		let data = {
+				key : key,
+				encodeText : document.getElementById("dinputString").value,
+				cipherCd : cipCd,
+				encCd : radioChk,
+				paramIv : document.getElementById("decryptivinput").value
+		};
+		
+		console.log(data);
+		
+		return data;
+	}
+	
+	let keySave = function() {
+		
+		let data = {
+				keyName : document.getElementById("keyName").value,
+				keySize : document.getElementById("saveKeysize").value
+		};
+		
+		console.log(keyList);
+		loadData("POST", "/aes/keySave", JSON.stringify(data), function(rst) {
+			switch ( rst.result ) {
+				case "S" : alert('저장되었습니다.'); break;
+				case "E" : alert('오류가 발생하였습니다. 다시 시도해주세요.'); break;
+				case "D" : alert('key name이 중복됩니다.'); break;
+				case "K" : alert('key값 중복, 재시도해주세요.'); break;
+			}
+			
+		});
+		
+	}
+	
+	let keySearch = function() {
+		let searchStr = document.getElementById("ipt_keySearch").value;
+		if ( typeof searchStr == "undefined" ) searchStr = "";
+		loadData("GET", "/aes/keySearch?searchStr=" + searchStr, {}, function(rst) {
+			console.log(rst);
+			keyList = rst;	// 전역변수
+			keysSet(rst, document.getElementById("sel_keySearch"));
+			keysSet(rst, document.getElementById("sel_key"));
+			keysSet(rst, document.getElementById("sel_dkey"));
+		});
+	}
+	
+	
+	let keyDelete = function() {
+		let stb = document.getElementById("sel_keySearch");
+		let delKey = stb.options[stb.selectedIndex].innerHTML;
+		
+		
+		if( stb.options[stb.selectedIndex].getAttribute("value") == null ) return false;
+		loadData("DELETE", "/aes/keyDelete/" + delKey, {}, function(rst) {
+			console.log(rst);
+			switch ( rst.result ) {
+				case "S" : alert('삭제되었습니다.'); 
+					keySearch();
+				break;
+				case "E" : alert('오류가 발생하였습니다. 다시 시도해주세요.'); break;
+			}
+		});
+	}
+	
+	let keyUpdate = function() {
+		let stb = document.getElementById("sel_keySearch");
+		if( stb.options[stb.selectedIndex].getAttribute("value") == null ) return false;
+		
+		let updateKey = stb.options[stb.selectedIndex].innerHTML;
+		let keySize = document.getElementById("updKeysize").value;
+		
+		loadData("PUT", "/aes/keyUpdate/" + updateKey + "/keySize/" + keySize, {}, function(rst) {
+			console.log(rst);
+			switch ( rst.result ) {
+				case "S" : alert('갱신되었습니다.'); 
+					//stb.options[stb.selectedIndex].setAttribute("value", newKey);
+					keySearch();
+					break;
+				case "E" : alert('오류가 발생하였습니다. 다시 시도해주세요.'); break;
+			}
+		});
+	}
+	
+	let keysSet = function(dataArr, stb) {
+		
+		while (stb.options.length > 0 ) {
+			stb.options.remove(0);
+		}
+		
+		if( dataArr.length == 0 || typeof dataArr == "undefined" ) {
+			var op = document.createElement("option");
+			op.innerHTML = '조회된 결과가 없습니다.';
+			stb.options.add(op);
+			return false;
+		}
+		
+		for( var i = 0 ; i < dataArr.length; i++) {
+			var op = document.createElement("option");
+			op.setAttribute("value", dataArr[i].key);
+			op.innerHTML = dataArr[i].keyName;
+			stb.options.add(op);
+		}
+	}
+	
+	let getRandom = function(lenth) {
+	    var text = "";
+	    var possible = "abcdefghijklmnopqrstuvwxyz0123456789";
+	    for( var i=0; i < lenth; i++ )
+	        text += possible.charAt(Math.floor(Math.random() * possible.length));
+	    return text;
+	}
+	
+</script>
+<style type="text/css">
+
+</style>
+<meta charset="UTF-8">
+<title>AES</title>
+</head>
+<body>
+	<div data-include-path="../header.html"></div>
+	<div class="row" style="height: auto !important;">
+		<div class="col-md-6 col-sm-6 col-xs-12" style="padding-right: 15px;padding-left: 15px;">
+			<h2>AES 키 생성</h2>
+			<div class="form-group ng-hide" ng-show="" style="display:block">
+				<label for="decryptivinput">Enter Key Name</label> 
+				<input class="form-control input-lg ng-pristine ng-untouched ng-valid" id="keyName" placeholder="Enter Key Name">
+			</div>
+			<div class="form-group">
+				<label for="saveKeysize">Key Size in Bits</label> <select
+					class="form-control input-lg ng-pristine ng-valid ng-touched"
+					ng-model="keysize" id="saveKeysize">
+					<option value="128" selected="">128</option>
+					<option value="192">192</option>
+					<option value="256">256</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash" onclick="keySave()">저장</button>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-xs-12 vertical-line" style="padding-right: 15px;padding-left: 15px;">
+			<h2>AES Key Search</h2>
+			<div class="form-group ng-hide" ng-show="" style="display:block">
+				<label for="decryptivinput">Enter Key Name</label> 
+				<input class="form-control input-lg ng-pristine ng-untouched ng-valid" id="ipt_keySearch" placeholder="Enter Key Name">
+			</div>
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash" onclick="keySearch()">조회</button>
+			</div>
+			<h2>AES Key Search Result</h2>
+			
+			<div class="form-group" style="margin-top:0px">
+				<select class="form-control input-lg ng-pristine ng-untouched ng-valid" ng-model="mode" id="sel_keySearch" onchange="">
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="updKeysize">Key Size in Bits</label> <select
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					ng-model="dkeysize" id="updKeysize">
+					<option value="128" selected="">128</option>
+					<option value="192">192</option>
+					<option value="256">256</option>
+				</select>
+			</div>
+			
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash" onclick="keyUpdate()">갱신</button>
+				<button class="btn btn-primary" name="hash" value="hash" onclick="keyDelete()">삭제</button>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-xs-12 vertical-line" style="padding-right: 15px;padding-left: 15px;">
+			<form role="form" class="ng-pristine ng-valid">
+				<h2>AES Online Encryption</h2>
+				<div class="form-group">
+					<label for="inputString">Enter text to be Encrypted</label>
+					<textarea id="inputString"
+						class="form-control input-lg ng-pristine ng-valid ng-touched"
+						rows="5" placeholder="Enter plain text to be Encrypted"
+						ng-model="textToEncrypt" name="textToEncrypt"
+						style="height: 186px;"></textarea>
+				</div>
+				 <label for="mode">Select Key name</label>
+				 <div class="form-group" style="margin-top:0px">
+					<select class="form-control input-lg ng-pristine ng-untouched ng-valid" ng-model="mode" id="sel_key" onchange="">
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="mode">Select Cipher Mode of Encryption</label> 
+					<select
+						class="form-control input-lg ng-pristine ng-untouched ng-valid"
+						ng-model="mode" id="mode" ng-change="encryptModeSelected()">
+						<option value="ECB" selected="">ECB</option>
+						<option value="CBC">CBC</option>
+					</select>
+				</div>
+				
+				<div class="form-group ng-hide" ng-show="showEncryptIV" style="display:none">
+					<label for="encryptivinput">Enter IV (Optional)</label> <input
+						class="form-control input-lg ng-pristine ng-untouched ng-valid"
+						id="encryptivinput" ng-model="encryptiv"
+						placeholder="Enter initialization vector" name="encryptivinput">
+				</div>
+				<div class="form-group" style="display:none">
+					<label for="secretkey">Enter Secret Key</label> <input
+						class="form-control input-lg ng-pristine ng-untouched ng-valid"
+						id="secretkey" ng-model="secretkey" placeholder="Enter secret key"
+						name="secretkey">
+				</div>
+
+				<label>Output Text Format:</label> <input type="radio"
+					ng-model="encryptOutputFormat" value="Base64"
+					class="ng-pristine ng-untouched ng-valid" name="encryptRadio">Base64  <input
+					type="radio" ng-model="encryptOutputFormat" value="Hex"
+					class="ng-pristine ng-untouched ng-valid" name="encryptRadio">Hex
+			</form>
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash"
+					onclick="symmetricEncrypt()">Encrypt</button><!-- setEncData() -->
+			</div>
+
+			<div class="form-group">
+				<label for="outputString">AES Encrypted Output:</label>
+				<textarea id="outputString"
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					rows="5" placeholder="Result goes here" ng-model="encryptedOutput"></textarea>
+			</div>
+
+
+		</div>
+		<div class="col-md-6 col-sm-6 col-xs-12 vertical-line"
+			style="height: auto !important;padding-right: 15px;padding-left: 15px;">
+
+			<form role="form" class="ng-pristine ng-valid">
+				<h2>AES Online Decryption</h2>
+				<div class="form-group">
+					<label for="dinputString">Enter text to be Decrypted</label>
+					<textarea id="dinputString"
+						class="form-control input-lg ng-pristine ng-untouched ng-valid"
+						rows="5" ng-model="textToDecrypt"
+						placeholder="Enter text to be Decrypted" name="textToDecrypt"></textarea>
+				</div>
+
+				<label>Input Text Format:</label> 
+				<input type="radio" ng-model="decryptInputFormat" value="Base64"
+					class="ng-pristine ng-untouched ng-valid" name="decryptRadio">Base64  
+				<input type="radio" ng-model="decryptInputFormat" value="Hex"
+					class="ng-pristine ng-untouched ng-valid" name="decryptRadio">Hex
+			</form>
+				<label for="mode">Select Key name</label>
+				 <div class="form-group" style="margin-top:0px">
+					<select class="form-control input-lg ng-pristine ng-untouched ng-valid" ng-model="mode" id="sel_dkey" onchange="">
+					</select>
+				</div>
+			
+			<div class="form-group">
+				<label for="dmode">Select Cipher Mode of Decryption</label> <select
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					ng-model="dmode" id="dmode" ng-change="decryptModeSelected()">
+					<option value="ECB" selected="">ECB</option>
+					<option value="CBC">CBC</option>
+				</select>
+			</div>
+			<div class="form-group ng-hide" ng-show="showDecryptIV" style="display:none">
+				<label for="decryptivinput">Enter IV Used During
+					Encryption(Optional)</label> <input
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					id="decryptivinput" ng-model="decryptiv"
+					placeholder="Enter initialization vector" name="decryptiv">
+			</div>
+			<div class="form-group" style="display:none">
+				<label for="secretkey">Enter Secret Key used for Encryption</label>
+				<input
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					id="dsecretkey" ng-model="dsecretkey"
+					placeholder="Enter secret key" name="secretkey">
+			</div>
+			<div class="form-group">
+				<button class="btn btn-primary" name="hash" value="hash"
+					onclick="symmetricDecrypt()">Decrypt</button>
+			</div>
+
+			<div class="form-group">
+				<label for="doutputString">AES Decrypted Output <strong>(Base64)</strong>:
+				</label>
+				<textarea id="doutputString"
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					placeholder="Base64 encoded result goes here"
+					ng-model="decryptedString" rows="5"></textarea>
+			</div>
+			<!-- 
+			<div class="form-group">
+				<button class="btn btn-primary" name="base64"
+					value="Decode to Plain Text" ng-click="base64Decrypt()">Decode
+					to Plain Text</button>
+			</div>
+			 -->
+			<!-- 
+			<div class="form-group">
+				<input
+					class="form-control input-lg ng-pristine ng-untouched ng-valid"
+					id="base64decoded" ng-model="base64decoded"
+					placeholder="Plain text will appear here" name="base64decoded">
+			</div>
+			 -->
+		</div>
+	</div>
+
+</body>
+</html>
