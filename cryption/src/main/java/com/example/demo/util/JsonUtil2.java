@@ -1,9 +1,9 @@
 package com.example.demo.util;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,56 +22,78 @@ public class JsonUtil2 {
 	private static String folderPath ;
 	private static final Logger LOGGER = LoggerFactory.getLogger(JsonUtil2.class);
 	
-	
 	public static void main(String[] args) {
+		TestVO member = new TestVO();
 		
-		folderPath = "c:/Users/jgn/Downloads/";
-		path = folderPath + "Auth.postman_collection.json";
+		member.setBool(false);
+		member.setStr("test1");
+		member.setStr2("test2");
+		member.setStr3("test3");
+		member.setStr4("test4");
+		member.setInt1(111);
+		member.setInt2(222);
+		member.setInt3(333);
 		
-		Map<String,Object> map = new HashMap<String, Object>();
-		JSONParser parser = new JSONParser();
-		List<Map<String,Object>> items = new ArrayList<>();
+		List<String> list = new ArrayList<>();
+		list.add("aa");
+		list.add("bb");
+		list.add("cc");
 		
-		try {
-			FileReader reader = new FileReader(path);
-			String tmp = "";
-			int chkStr = reader.read(); 
-			if( chkStr == -1 ) {
-			} else {
-				char tt = (char)chkStr;
-				int ch;
-				while ((ch = reader.read()) != -1) {
-					tmp = tmp + (char) ch;
-				}
-			}
+		member.setLst(list);
+		Map<String,String> map = new HashMap<>();
+		
+		map.put("a","1");
+		map.put("b","2");
+		map.put("c","3");
+		member.setMap(map);
+		
+		getToString(member);
+		
+	}
+	
+	
+	public static void getToString(Object member ) {
+		List<String> errorList = new ArrayList<>();
 			
-			
-			map = (Map<String, Object>) parser.parse((char)chkStr + tmp);
-			items = (List<Map<String, Object>>) map.get("item");
-			
-			System.out.println(map);
-			int i = 0;
-			for( Map<String,Object> m : items ) {
-				System.out.print(m.get("name"));
-				System.out.print("\t");
-				System.out.print(m.get("name"));
-				System.out.print(m.get("name"));
-				System.out.print(m.get("name"));
+	   Field[] memberList = member.getClass().getDeclaredFields();        
+        for(Field mem : memberList){
+            mem.setAccessible(true); // private 도 접근 가능하도록 설정
+            try {
+            	if( mem.get(member) != null ) {
+            		System.out.print("[" + mem.get(member).getClass().getName() + "] ");
+            		System.out.print(mem.getName() + " : ");
+            		System.out.println(mem.get(member));
+            		/*
+            		if( mem.get(member).getClass().equals(String.class) ) {
+            			System.out.println(mem.get(member));
+            		} else if ( mem.get(member).getClass().equals(Integer.class) ) {
+            			System.out.println(mem.get(member));
+            		} else if ( mem.get(member).getClass().equals(Boolean.class) ) {
+            			System.out.println(mem.get(member));
+            		} else if ( mem.get(member).getClass().equals(ArrayList.class) ) {
+            			System.out.println(((ArrayList)mem.get(member)));
+            		} else if ( mem.get(member).getClass().equals(HashMap.class) ) {
+            			System.out.println(((HashMap)mem.get(member)));
+            		} else {
+            			System.out.println(mem.get(member));
+            		}
+            		*/
+            	}
 				
-				i++;
-				if( i > 0 ) break;
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				try {
+					errorList.add(mem.get(member).getClass().getName());
+				} catch (IllegalArgumentException | IllegalAccessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				e.printStackTrace();
 			}
-			
-			
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-			
-			
+        }
+        
+        if( errorList.size() > 0 ) {
+        	System.out.println(errorList.toString());
+        }
 		
 	}
 	
