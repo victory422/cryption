@@ -3,11 +3,16 @@ package com.example.demo.util;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.lang.reflect.Field;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.crypto.KeyGenerator;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -16,13 +21,15 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JsonUtil2 {
+public class JgnTestJavaApplication {
 	
 	private static String path ;
 	private static String folderPath ;
-	private static final Logger LOGGER = LoggerFactory.getLogger(JsonUtil2.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JgnTestJavaApplication.class);
 	
 	public static void main(String[] args) {
+		System.out.println(getCPUProcess());
+		System.out.println(getCPUsage());
 		TestVO member = new TestVO();
 		
 		member.setBool(false);
@@ -48,6 +55,23 @@ public class JsonUtil2 {
 		member.setMap(map);
 		
 		getToString(member);
+		
+		int a = 10;
+		
+		 KeyGenerator keyGen;
+		try {
+			keyGen = KeyGenerator.getInstance("AES");
+			keyGen.init(128); // 128-bit key size
+			System.out.println(keyGen.toString());
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	        
+		//String j = String.format("%x", "13");
+		
+
+		
 		
 	}
 	
@@ -92,7 +116,9 @@ public class JsonUtil2 {
         }
         
         if( errorList.size() > 0 ) {
-        	System.out.println(errorList.toString());
+        	for(String t : errorList) {
+        		System.out.println(t.toString());
+        	}
         }
 		
 	}
@@ -155,7 +181,7 @@ public class JsonUtil2 {
 	}
 	
 	public static void deleteJson(String delKey) throws ParseException {
-		List<Map<String,String>> list = JsonUtil2.readJson();
+		List<Map<String,String>> list = JgnTestJavaApplication.readJson();
 		if( list == null ) list = new JSONArray();
 		
 		for( int i = 0 ; i < list.size(); i++ ) {
@@ -169,7 +195,7 @@ public class JsonUtil2 {
 	
 
 	public static void updateJson(String updateKey, String newKey, int keySize) throws ParseException {
-		List<Map<String,String>> list = JsonUtil2.readJson();
+		List<Map<String,String>> list = JgnTestJavaApplication.readJson();
 		if( list == null ) list = new JSONArray();
 		
 		for( int i = 0 ; i < list.size(); i++ ) {
@@ -183,5 +209,36 @@ public class JsonUtil2 {
 		writeListJson(list);		
 	}
 	
+	
+	public static int getCPUProcess() {
+	      OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+
+	        // Get the system load average over the last minute
+	        double loadAverage = osBean.getSystemLoadAverage();
+	        // Get the number of available processors
+	        int availableProcessors = osBean.getAvailableProcessors();
+
+	        // Calculate CPU usage as a percentage
+	        double cpuUsage = (loadAverage / availableProcessors) * 100;
+		return (int)cpuUsage ;
+	}
+	
+	
+    private static double getCPUsage() {
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+
+        // Check if the method is supported (not all JVMs provide this information)
+        if (osBean instanceof com.sun.management.OperatingSystemMXBean) {
+            com.sun.management.OperatingSystemMXBean sunOsBean = (com.sun.management.OperatingSystemMXBean) osBean;
+
+            // Returns the "recent cpu usage" for the whole system
+            double cpuUsage = sunOsBean.getSystemCpuLoad() * 100.0;
+
+            return cpuUsage;
+        } else {
+            System.out.println("CPU usage monitoring is not supported on this platform.");
+            return -1.0;
+        }
+    }
 	
 }

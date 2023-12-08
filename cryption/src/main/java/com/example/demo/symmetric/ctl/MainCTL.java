@@ -24,4 +24,10 @@ public class MainCTL {
 		return "sha";
 	}
 	
+	@GetMapping("/scraping")
+	public String scraping() {
+		return "scraping";
+	}
+	
+	
 }

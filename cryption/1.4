@@ -1,0 +1,599 @@
+1        Introduction
+
+1.0 IPR Policy
+
+1.1 Terminology
+
+1.2 Normative References
+
+1.3 Non-Normative References
+
+2        Objects
+
+2.1 Base Objects
+
+2.1.1 Attribute
+
+2.1.2 Credential
+
+2.1.3 Key Block
+
+2.1.4 Key Value
+
+2.1.5 Key Wrapping Data
+
+2.1.6 Key Wrapping Specification
+
+2.1.7 Transparent Key Structures
+
+2.1.7.1 Transparent Symmetric Key
+
+2.1.7.2 Transparent DSA Private Key
+
+2.1.7.3 Transparent DSA Public Key
+
+2.1.7.4 Transparent RSA Private Key
+
+2.1.7.5 Transparent RSA Public Key
+
+2.1.7.6 Transparent DH Private Key
+
+2.1.7.7 Transparent DH Public Key
+
+2.1.7.8 Transparent ECDSA Private Key
+
+2.1.7.9 Transparent ECDSA Public Key
+
+2.1.7.10 Transparent ECDH Private Key
+
+2.1.7.11 Transparent ECDH Public Key
+
+2.1.7.12 Transparent ECMQV Private Key
+
+2.1.7.13 Transparent ECMQV Public Key
+
+2.1.7.14 Transparent EC Private Key
+
+2.1.7.15 Transparent EC Public Key
+
+2.1.8 Template-Attribute Structures
+
+2.1.9 Extension Information
+
+2.1.10 Data
+
+2.1.11 Data Length
+
+2.1.12 Signature Data
+
+2.1.13 MAC Data
+
+2.1.14 Nonce
+
+2.1.15 Correlation Value
+
+2.1.16 Init Indicator
+
+2.1.17 Final Indicator
+
+2.1.18 RNG Parameters
+
+2.1.19 Profile Information
+
+2.1.20 Validation Information
+
+2.1.21 Capability Information
+
+2.1.22 Authenticated Encryption Additional Data
+
+2.1.23 Authenticated Encryption Tag
+
+2.2 Managed Objects
+
+2.2.1 Certificate
+
+2.2.2 Symmetric Key
+
+2.2.3 Public Key
+
+2.2.4 Private Key
+
+2.2.5 Split Key
+
+2.2.6 Template
+
+2.2.7 Secret Data
+
+2.2.8 Opaque Object
+
+2.2.9 PGP Key
+
+3        Attributes
+
+3.1 Unique Identifier
+
+3.2 Name
+
+3.3 Object Type
+
+3.4 Cryptographic Algorithm
+
+3.5 Cryptographic Length
+
+3.6 Cryptographic Parameters
+
+3.7 Cryptographic Domain Parameters
+
+3.8 Certificate Type
+
+3.9 Certificate Length
+
+3.10 X.509 Certificate Identifier
+
+3.11 X.509 Certificate Subject
+
+3.12 X.509 Certificate Issuer
+
+3.13 Certificate Identifier
+
+3.14 Certificate Subject
+
+3.15 Certificate Issuer
+
+3.16 Digital Signature Algorithm
+
+3.17 Digest
+
+3.18 Operation Policy Name
+
+3.18.1 Operations outside of operation policy control
+
+3.18.2 Default Operation Policy
+
+3.18.2.1 Default Operation Policy for Secret Objects
+
+3.18.2.2 Default Operation Policy for Certificates and Public Key Objects
+
+3.18.2.3 Default Operation Policy for Template Objects
+
+3.19 Cryptographic Usage Mask
+
+3.20 Lease Time
+
+3.21 Usage Limits
+
+3.22 State
+
+3.23 Initial Date
+
+3.24 Activation Date
+
+3.25 Process Start Date
+
+3.26 Protect Stop Date
+
+3.27 Deactivation Date
+
+3.28 Destroy Date
+
+3.29 Compromise Occurrence Date
+
+3.30 Compromise Date
+
+3.31 Revocation Reason
+
+3.32 Archive Date
+
+3.33 Object Group
+
+3.34 Fresh
+
+3.35 Link
+
+3.36 Application Specific Information
+
+3.37 Contact Information
+
+3.38 Last Change Date
+
+3.39 Custom Attribute
+
+3.40 Alternative Name
+
+3.41 Key Value Present
+
+3.42 Key Value Location
+
+3.43 Original Creation Date
+
+3.44 Random Number Generator
+
+3.45 PKCS#12 Friendly Name
+
+3.46 Description
+
+3.47 Comment
+
+3.48 Sensitive
+
+3.49 Always Sensitive
+
+3.50 Extractable
+
+3.51 Never Extractable
+
+4        Client-to-Server Operations
+
+4.1 Create
+
+4.2 Create Key Pair
+
+4.3 Register
+
+4.4 Re-key
+
+4.5 Re-key Key Pair
+
+4.6 Derive Key
+
+4.7 Certify
+
+4.8 Re-certify
+
+4.9 Locate
+
+4.10 Check
+
+4.11 Get
+
+4.12 Get Attributes
+
+4.13 Get Attribute List
+
+4.14 Add Attribute
+
+4.15 Modify Attribute
+
+4.16 Delete Attribute
+
+4.17 Obtain Lease
+
+4.18 Get Usage Allocation
+
+4.19 Activate
+
+4.20 Revoke
+
+4.21 Destroy
+
+4.22 Archive
+
+4.23 Recover
+
+4.24 Validate
+
+4.25 Query
+
+4.26 Discover Versions
+
+4.27 Cancel
+
+4.28 Poll
+
+4.29 Encrypt
+
+4.30 Decrypt
+
+4.31 Sign
+
+4.32 Signature Verify
+
+4.33 MAC
+
+4.34 MAC Verify
+
+4.35 RNG Retrieve
+
+4.36 RNG Seed
+
+4.37 Hash
+
+4.38 Create Split Key
+
+4.39 Join Split Key
+
+4.40 Export
+
+4.41 Import
+
+5        Server-to-Client Operations
+
+5.1 Notify
+
+5.2 Put
+
+5.3 Query
+
+6        Message Contents
+
+6.1 Protocol Version
+
+6.2 Operation
+
+6.3 Maximum Response Size
+
+6.4 Unique Batch Item ID
+
+6.5 Time Stamp
+
+6.6 Authentication
+
+6.7 Asynchronous Indicator
+
+6.8 Asynchronous Correlation Value
+
+6.9 Result Status
+
+6.10 Result Reason
+
+6.11 Result Message
+
+6.12 Batch Order Option
+
+6.13 Batch Error Continuation Option
+
+6.14 Batch Count
+
+6.15 Batch Item
+
+6.16 Message Extension
+
+6.17 Attestation Capable Indicator
+
+6.18 Client Correlation Value
+
+6.19 Server Correlation Value
+
+7        Message Format
+
+7.1 Message Structure
+
+7.2 Operations
+
+8        Authentication
+
+9        Message Encoding
+
+9.1 TTLV Encoding
+
+9.1.1 TTLV Encoding Fields
+
+9.1.1.1 Item Tag
+
+9.1.1.2 Item Type
+
+9.1.1.3 Item Length
+
+9.1.1.4 Item Value
+
+9.1.2 Examples
+
+9.1.3 Defined Values
+
+9.1.3.1 Tags
+
+9.1.3.2 Enumerations
+
+9.1.3.2.1 Credential Type Enumeration
+
+9.1.3.2.2 Key Compression Type Enumeration
+
+9.1.3.2.3 Key Format Type Enumeration
+
+9.1.3.2.4 Wrapping Method Enumeration
+
+9.1.3.2.5 Recommended Curve Enumeration
+
+9.1.3.2.6 Certificate Type Enumeration
+
+9.1.3.2.7 Digital Signature Algorithm Enumeration
+
+9.1.3.2.8 Split Key Method Enumeration
+
+9.1.3.2.9 Secret Data Type Enumeration
+
+9.1.3.2.10 Opaque Data Type Enumeration
+
+9.1.3.2.11 Name Type Enumeration
+
+9.1.3.2.12 Object Type Enumeration
+
+9.1.3.2.13 Cryptographic Algorithm Enumeration
+
+9.1.3.2.14 Block Cipher Mode Enumeration
+
+9.1.3.2.15 Padding Method Enumeration
+
+9.1.3.2.16 Hashing Algorithm Enumeration
+
+9.1.3.2.17 Key Role Type Enumeration
+
+9.1.3.2.18 State Enumeration
+
+9.1.3.2.19 Revocation Reason Code Enumeration
+
+9.1.3.2.20 Link Type Enumeration
+
+9.1.3.2.21 Derivation Method Enumeration
+
+9.1.3.2.22 Certificate Request Type Enumeration
+
+9.1.3.2.23 Validity Indicator Enumeration
+
+9.1.3.2.24 Query Function Enumeration
+
+9.1.3.2.25 Cancellation Result Enumeration
+
+9.1.3.2.26 Put Function Enumeration
+
+9.1.3.2.27 Operation Enumeration
+
+9.1.3.2.28 Result Status Enumeration
+
+9.1.3.2.29 Result Reason Enumeration
+
+9.1.3.2.30 Batch Error Continuation Option Enumeration
+
+9.1.3.2.31 Usage Limits Unit Enumeration
+
+9.1.3.2.32 Encoding Option Enumeration
+
+9.1.3.2.33 Object Group Member Enumeration
+
+9.1.3.2.34 Alternative Name Type Enumeration
+
+9.1.3.2.35 Key Value Location Type Enumeration
+
+9.1.3.2.36 Attestation Type Enumeration
+
+9.1.3.2.37 RNG Algorithm Enumeration
+
+9.1.3.2.38 DRBG Algorithm Enumeration
+
+9.1.3.2.39 FIPS186 Variation Enumeration
+
+9.1.3.2.40 Validation Authority Type Enumeration
+
+9.1.3.2.41 Validation Type Enumeration
+
+9.1.3.2.42 Profile Name Enumeration
+
+9.1.3.2.43 Unwrap Mode Enumeration
+
+9.1.3.2.44 Destroy Action Enumeration
+
+9.1.3.2.45 Shredding Algorithm Enumeration
+
+9.1.3.2.46 RNG Mode Enumeration
+
+9.1.3.2.47 Client Registration Method Enumeration
+
+9.1.3.2.48 Key Wrap Type Enumeration
+
+9.1.3.2.49 Mask Generator Enumeration
+
+9.1.3.3 Bit Masks
+
+9.1.3.3.1 Cryptographic Usage Mask
+
+9.1.3.3.2 Storage Status Mask
+
+10      Transport
+
+11      Error Handling
+
+11.1 General
+
+11.2 Create
+
+11.3 Create Key Pair
+
+11.4 Register
+
+11.5 Re-key
+
+11.6 Re-key Key Pair
+
+11.7 Derive Key
+
+11.8 Certify
+
+11.9 Re-certify
+
+11.10 Locate
+
+11.11 Check
+
+11.12 Get
+
+11.13 Get Attributes
+
+11.14 Get Attribute List
+
+11.15 Add Attribute
+
+11.16 Modify Attribute
+
+11.17 Delete Attribute
+
+11.18 Obtain Lease
+
+11.19 Get Usage Allocation
+
+11.20 Activate
+
+11.21 Revoke
+
+11.22 Destroy
+
+11.23 Archive
+
+11.24 Recover
+
+11.25 Validate
+
+11.26 Query
+
+11.27 Discover Versions
+
+11.28 Cancel
+
+11.29 Poll
+
+11.30 Encrypt
+
+11.31 Decrypt
+
+11.32 Sign
+
+11.33 Signature Verify
+
+11.34 MAC
+
+11.35 MAC Verify
+
+11.36 RNG Retrieve
+
+11.37 RNG Seed
+
+11.38 HASH
+
+11.39 Create Split Key
+
+11.40 Join Split Key
+
+11.41 Export
+
+11.42 Import
+
+11.43 Batch Items
+
+12      KMIP Server and Client Implementation Conformance
+
+12.1 KMIP Server Implementation Conformance
+
+12.2 KMIP Client Implementation Conformance
+
+Appendix A. Acknowledgments
+
+Appendix B. Attribute Cross-Reference
+
+Appendix C. Tag Cross-Reference
+
+Appendix D. Operations and Object Cross-Reference
+
+Appendix E. Acronyms
+
+Appendix F. List of Figures and Tables
+
+Appendix G. Revision History
