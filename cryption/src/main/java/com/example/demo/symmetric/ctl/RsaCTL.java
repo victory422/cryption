@@ -1,27 +1,34 @@
 package com.example.demo.symmetric.ctl;
 
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dreamsecurity.jcaos.exception.AlgorithmException;
+import com.dreamsecurity.jcaos.exception.NoSuchModeException;
 import com.example.demo.symmetric.svc.RsaService;
 import com.example.demo.util.ApiResponse;
 
@@ -35,12 +42,13 @@ public class RsaCTL {
     @PostMapping("/keySave")
     public ApiResponse<Map<String, String>> keySave(
     		@RequestBody Map<String,String> params
-    		) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+    		) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, AlgorithmException, NoSuchModeException {
     	String keyName = params.get("keyName");
     	int keySize = Integer.parseInt(params.get("keySize"));
+    	String passwordStr = params.get("password").toString();
         Map<String,String> rst = new HashMap<>();
 
-        String rstCd = rsaService.keySave(keyName, keySize);
+        String rstCd = rsaService.keySave(keyName, keySize, passwordStr.getBytes());
         
         rst.put("result", rstCd);
         rst.put("keyName", keyName);
@@ -65,7 +73,8 @@ public class RsaCTL {
 	public ApiResponse<Map<String,String>> keyUpdate(@RequestBody Map<String, Object> param) throws Exception {
 				String updateKey = (String) param.get("updateKey");
 				int keySize = Integer.parseInt((String) param.get("keySize"));
-		return new ApiResponse<Map<String, String>>(rsaService.keyUpdate(updateKey, keySize), HttpStatus.OK);
+				String passwordStr = param.get("password").toString();
+		return new ApiResponse<Map<String, String>>(rsaService.keyUpdate(updateKey, keySize, passwordStr.getBytes()), HttpStatus.OK);
 	}
 	
 	
@@ -87,7 +96,8 @@ public class RsaCTL {
 		Map<String, String> map = new HashMap<>();
 		String encodenText = params.get("encodeText");
 		String keyName = params.get("keyName");
-		String rst = rsaService.decryptRSA(encodenText, keyName);
+		String passwordStr = params.get("password").toString();
+		String rst = rsaService.decryptRSA(encodenText, keyName, passwordStr.getBytes());
 		map.put("result",rst);
 		return new ApiResponse<Map<String, String>>(map, HttpStatus.OK);
 	}
@@ -98,7 +108,8 @@ public class RsaCTL {
 			) throws Exception {
 		String plainText = params.get("plainText");
 		String keyName = params.get("keyName");
-		Map<String, String> map = rsaService.digitalSign(plainText, keyName);
+		String passwordStr = params.get("password").toString();
+		Map<String, String> map = rsaService.digitalSign(plainText, keyName, passwordStr.getBytes());
 		return new ApiResponse<Map<String, String>>(map, HttpStatus.OK);
 	}
 	

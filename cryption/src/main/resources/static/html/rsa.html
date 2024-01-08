@@ -70,7 +70,8 @@ let keyList = [];
 		let data = {
 				encodeText : document.getElementById("dinputString").value,
 				keyName : keyName,
-				keySize : 0
+				keySize : 0,
+				password : document.getElementById("decPassword").value
 		};
 		
 		console.log(data);
@@ -82,11 +83,12 @@ let keyList = [];
 		
 		let data = {
 				keyName : document.getElementById("keyName").value,
-				keySize : document.getElementById("keysize").value
+				keySize : document.getElementById("keysize").value,
+				password : document.getElementById("keyPassword").value
 		};
 				
 		//param	
-		loadData("POST", "/rsa/publicKey", JSON.stringify(data), function(rst) {
+		loadData("POST", "/rsa/keySave", JSON.stringify(data), function(rst) {
 			console.log(rst);
 			keyList.push(rst);
 			switch ( rst.result ) {
@@ -137,7 +139,8 @@ let keyList = [];
 		
 		let data = {
 				updateKey : stb.options[stb.selectedIndex].innerHTML,
-				keySize : document.getElementById("updateKeysize").value
+				keySize : document.getElementById("updateKeysize").value,
+				password : document.getElementById("updatePassword").value
 		}
 		
 		loadData("PUT", "/rsa/keyUpdate", JSON.stringify(data), function(rst) {
@@ -157,7 +160,8 @@ let keyList = [];
 		let data = {
 				plainText : document.getElementById("signString").value,
 				keyName : stb.options[stb.selectedIndex].innerHTML,
-				keySize : document.getElementById("updateKeysize").value
+				keySize : document.getElementById("updateKeysize").value,
+				password : document.getElementById("signPassword").value
 		}
 		
 		loadData("POST", "/rsa/digitalSign", JSON.stringify(data), function(rst) {
@@ -180,7 +184,8 @@ let keyList = [];
 				plainText : document.getElementById("vsPlainText").value,
 				signText : document.getElementById("vSignString").value,
 				keyName : stb.options[stb.selectedIndex].innerHTML,
-				keySize : document.getElementById("updateKeysize").value
+				keySize : document.getElementById("updateKeysize").value,
+
 		}
 		
 		loadData("POST", "/rsa/signVerification", JSON.stringify(data), function(rst) {
@@ -242,8 +247,9 @@ let keyList = [];
 		<div class="col-md-6 col-sm-6 col-xs-12" style="padding-right: 15px;padding-left: 15px;">
 			<h2>RSA 키 생성</h2>
 			<div class="form-group ng-hide" ng-show="showDecryptIV" style="display:block">
-				<label for="decryptivinput">Enter Key Name</label> 
+				<label for="decryptivinput">Enter Key Info</label> 
 				<input class="form-control input-lg ng-pristine ng-untouched ng-valid" id="keyName" placeholder="Enter Key Name">
+				<input class="form-control input-lg ng-pristine ng-untouched ng-valid" type="password"" id="keyPassword" placeholder="Enter Key Password" style="margin-top: 5px;">
 			</div>
 			<div class="form-group">
 				<label for="keysize">Key Size in Bits</label> 
@@ -279,6 +285,7 @@ let keyList = [];
 					<option value="2048" selected="selected">2048 bit</option>
 					<option value="4096">4096 bit</option>
 				</select>
+				<input class="form-control input-lg ng-pristine ng-untouched ng-valid" type="password"" id="updatePassword" placeholder="Enter Key Password" style="margin-top: 5px;">
 			<div class="form-group">
 				<button class="btn btn-primary" name="hash" value="hash" onclick="keyUpdate()">갱신</button>
 				<button class="btn btn-primary" name="hash" value="hash" onclick="keyDelete()">삭제</button>
@@ -362,6 +369,7 @@ let keyList = [];
 			 <div class="form-group" style="margin-top:0px">
 				<select class="form-control input-lg ng-pristine ng-untouched ng-valid" ng-model="mode" id="sel_decKey" onchange="">
 				</select>
+				<input class="form-control input-lg ng-pristine ng-untouched ng-valid" type="password"" id="decPassword" placeholder="Enter Key Password" style="margin-top: 5px;">
 			</div>
 			
 			<div class="form-group">
@@ -412,6 +420,7 @@ let keyList = [];
 			 <div class="form-group" style="margin-top:0px">
 				<select class="form-control input-lg ng-pristine ng-untouched ng-valid" ng-model="mode" id="sel_signKey" onchange="">
 				</select>
+				<input class="form-control input-lg ng-pristine ng-untouched ng-valid" type="password" id="signPassword" placeholder="Enter Key Password" style="margin-top: 5px;">
 			</div>
 			
 			<div class="form-group">
